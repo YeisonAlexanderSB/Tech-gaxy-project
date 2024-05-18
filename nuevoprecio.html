@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productos</title>
+    <style>
+        /* Estilos CSS */
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f8f9fa; /* Fondo gris claro */
+        }
+        header {
+            background-color: #007bff; /* Color azul cielo para la barra superior */
+            padding: 20px;
+            color: white; /* Texto en color blanco */
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .product-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* Muestra 4 productos por fila */
+            gap: 20px;
+        }
+        .product-card {
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            background-color: white; /* Fondo blanco para tarjetas de producto */
+            color: #333; /* Texto negro para tarjetas de producto */
+        }
+        .product-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+        .delete-button {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: #dc3545; /* Color rojo para botón de eliminar */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .delete-button:hover {
+            background-color: #c82333; /* Color rojo más oscuro al pasar el mouse */
+        }
+        form {
+            background-color: #ffffff; /* Fondo blanco para el formulario */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
+            margin-bottom: 20px;
+            display: none; /* Ocultar formulario inicialmente */
+        }
+        form label, form input, form button {
+            display: block;
+            margin-bottom: 10px;
+        }
+        form button {
+            background-color: #007bff; /* Color azul cielo para botón del formulario */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        form button:hover {
+            background-color: #0056b3; /* Color azul cielo más oscuro al pasar el mouse */
+        }
+        .toggle-form-button {
+            background-color: #007bff; /* Color azul cielo para botón de toggle */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        .toggle-form-button:hover {
+            background-color: #0056b3; /* Color azul cielo más oscuro al pasar el mouse */
+        }
+        .export-buttons {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .export-button {
+            background-color: #007bff; /* Color azul cielo para botones de exportar */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        .export-button:hover {
+            background-color: #0056b3; /* Color azul cielo más oscuro al pasar el mouse */
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Productos Disponibles</h1>
+        <button class="toggle-form-button" id="toggleFormButton"><i class="fas fa-plus"></i> Agregar Producto</button>
+        <div class="export-buttons">
+            <button class="export-button" id="exportJsonButton">Exportar JSON</button>
+            <button class="export-button" id="exportCsvButton">Exportar CSV</button>
+        </div>
+        <form id="productForm">
+            <label for="name">Nombre:</label>
+            <input type="text" id="name" placeholder="Ingrese el nombre del producto" required>
+            <label for="price">Precio:</label>
+            <input type="number" id="price" placeholder="Ingrese el precio del producto" required>
+            <label for="description">Descripción:</label>
+            <input type="text" id="description" placeholder="Ingrese la descripción del producto" required>
+            <label for="imageUrl">URL de la Imagen:</label>
+            <input type="text" id="imageUrl" placeholder="Ingrese la URL de la imagen del producto" required>
+            <button type="submit">Agregar Producto</button>
+        </form>
+        
+    </header>
+    <div class="product-container" id="productContainer"></div>
+    <form id="productForm">
+        <label for="name">Nombre:</label>
+        <input type="text" id="name" required>
+        <label for="price">Precio:</label>
+        <input type="number" id="price" required>
+        <label for="description">Descripción:</label>
+        <input type="text" id="description" required>
+        <label for="imageUrl">URL de la Imagen:</label>
+        <input type="text" id="imageUrl" required>
+        <button type="submit">Agregar Producto</button>
+    </form>
+
+    <script>
+        // JavaScript para manejar productos y renderizarlos
+        const productContainer = document.getElementById('productContainer');
+        const productForm = document.getElementById('productForm');
+        const toggleFormButton = document.getElementById('toggleFormButton');
+        const exportJsonButton = document.getElementById('exportJsonButton');
+        const exportCsvButton = document.getElementById('exportCsvButton');
+
+        // Función para obtener productos desde el almacenamiento local
+        function getProducts() {
+            const products = JSON.parse(localStorage.getItem('products')) || [];
+            return products;
+        }
+
+        // Función para guardar productos en el almacenamiento local
+        function saveProducts(products) {
+            localStorage.setItem('products', JSON.stringify(products));
+        }
+
+        // Función para renderizar productos
+        function renderProducts() {
+            productContainer.innerHTML = ''; // Limpiar contenedor antes de renderizar
+
+            const products = getProducts();
+            products.forEach((product, index) => {
+                const productCard = document.createElement('div');
+                productCard.classList.add('product-card');
+
+                const imageElement = document.createElement('img');
+                imageElement.src = product.imageUrl;
+                imageElement.alt = product.name;
+                imageElement.classList.add('product-image');
+
+                const nameElement = document.createElement('h3');
+                nameElement.textContent = product.name;
+
+                const priceElement = document.createElement('p');
+                priceElement.textContent = `Precio: ${product.price}`;
+
+                const descriptionElement = document.createElement('p');
+                descriptionElement.textContent = product.description;
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Eliminar';
+                deleteButton.classList.add('delete-button');
+                deleteButton.addEventListener('click', () => {
+                    products.splice(index, 1); // Eliminar producto del array
+                    saveProducts(products); // Guardar productos actualizados
+                    renderProducts(); // Volver a renderizar la lista de productos
+                });
+
+                productCard.appendChild(imageElement);
+                productCard.appendChild(nameElement);
+                productCard.appendChild(priceElement);
+                productCard.appendChild(descriptionElement);
+                productCard.appendChild(deleteButton);
+
+                productContainer.appendChild(productCard);
+            });
+        }
+
+        // Función para agregar producto al formulario
+        function addProduct(name, price, description, imageUrl) {
+            const products = getProducts();
+            products.push({ name, price, description, imageUrl });
+            saveProducts(products);
+            renderProducts();
+        }
+
+        // Evento para manejar la presentación del formulario
+        toggleFormButton.addEventListener('click', () => {
+            productForm.style.display = productForm.style.display === 'block' ? 'none' : 'block';
+        });
+
+        // Evento para manejar el envío del formulario
+        productForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const name = document.getElementById('name').value;
+            const price = document.getElementById('price').value;
+            const description = document.getElementById('description').value;
+            const imageUrl = document.getElementById('imageUrl').value;
+            addProduct(name, price, description, imageUrl);
+            // Limpiar campos del formulario
+            document.getElementById('name').value = '';
+            document.getElementById('price').value = '';
+            document.getElementById('description').value = '';
+            document.getElementById('imageUrl').value = '';
+            productForm.style.display = 'none'; // Ocultar formulario después de agregar producto
+        });
+
+        // Función para exportar productos a formato JSON
+        function exportToJson() {
+            const products = getProducts();
+            const jsonContent = JSON.stringify(products, null, 2);
+            const url = URL.createObjectURL(new Blob([jsonContent], { type: 'application/json' }));
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'productos.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Función para exportar productos a formato CSV
+        function exportToCsv() {
+            const products = getProducts();
+            const csvContent = 'data:text/csv;charset=utf-8,' +
+                products.map(product => `${product.name},${product.price},${product.description},${product.imageUrl}`).join('\n');
+            const url = encodeURI(csvContent);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'productos.csv';
+            a.click();
+        }
+
+        // Eventos para los botones de exportar
+        exportJsonButton.addEventListener('click', exportToJson);
+        exportCsvButton.addEventListener('click', exportToCsv);
+
+        // Renderizar productos al cargar la página
+        renderProducts();
+    </script>
+</body>
+</html>
